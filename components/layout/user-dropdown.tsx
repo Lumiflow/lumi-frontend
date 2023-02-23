@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FlowerIcon, LayoutDashboard, LogOut, User, Wheat } from "lucide-react";
+import { Gem, LayoutDashboard, LogOut } from "lucide-react";
 import Popover from "@/components/shared/popover";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -48,7 +48,7 @@ export default function UserDropdown() {
           onClick={() => setOpenPopover(!openPopover)}
           className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-gray-300 transition-all duration-75 focus:outline-none active:scale-95 sm:h-9 sm:w-9"
         >
-          <Wheat width={20} height={20} />
+          <Gem width={20} height={20} />
         </button>
       </Popover>
     </motion.div>
