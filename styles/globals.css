@@ -4,7 +4,7 @@
 
 .lumi:after {
   content: '';
-  box-shadow: 0 0 10px 2px #fff, 0 0 80px 50px #A9D7F8, 0 0 100px 70px #77B5EF;
+  box-shadow: 0 0 10px 2px #fff, 0 0 80px 50px #A9D7F8, 0 0 85px 55px #77B5EF;
   width: 20px;
   height: 20px;
   display: block;

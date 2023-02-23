@@ -42,7 +42,7 @@ export default function Layout({
           scrolled
             ? "border-b border-gray-200 bg-white/50 backdrop-blur-xl"
             : "bg-white/0"
-        } z-30 transition-all`}
+        } z-10 transition-all`}
       >
         <div className="mx-5 flex h-16 max-w-screen-xl items-center justify-between xl:mx-auto">
           <Link href="/" className="flex items-center font-display text-2xl">
@@ -94,7 +94,7 @@ export default function Layout({
                   width={20}
                   height={20}
                 />
-                <p className="text-sm font-semibold">Works on Flow</p>
+                <p className="text-sm font-semibold">#OnFlow</p>
               </motion.a>
             </AnimatePresence>
             <AnimatePresence>

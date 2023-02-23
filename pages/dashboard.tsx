@@ -4,6 +4,7 @@ import Layout from "@/components/layout";
 import CountingNumbers from "@/components/shared/counting-numbers";
 import { useCreateModal } from "@/components/shared/create-modal";
 import { FADE_DOWN_ANIMATION_VARIANTS } from "@/lib/constants";
+import useScroll from "@/lib/hooks/use-scroll";
 import classNames from "classnames";
 import { motion } from "framer-motion";
 import {
@@ -17,6 +18,8 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 
 export default function Dashboard() {
+  const scrolled = useScroll(50);
+
   const { pathname } = useRouter();
   const { setShowCreateModal, CreateModal } = useCreateModal();
 
@@ -41,7 +44,7 @@ export default function Dashboard() {
         <motion.div className="flex items-center justify-center space-x-8 px-5 pb-8">
           <Link
             className={classNames(
-              "z-10 flex items-center space-x-2 transition-colors hover:text-gray-900",
+              "z-[5] flex items-center space-x-2 transition-colors hover:text-gray-900",
               pathname === "/dashboard" ? "text-gray-900" : "text-gray-400",
             )}
             href="/dashboard"
@@ -50,7 +53,7 @@ export default function Dashboard() {
             <span>Dashboard</span>
           </Link>
           <button
-            className="z-10 flex items-center space-x-2 text-gray-400 transition-colors hover:text-gray-900"
+            className="z-[5] flex items-center space-x-2 text-gray-400 transition-colors hover:text-gray-900"
             onClick={() => setShowCreateModal(true)}
           >
             <Coins />
@@ -59,7 +62,7 @@ export default function Dashboard() {
         </motion.div>
         <div className="grid w-full grid-cols-3 gap-4 p-2">
           <motion.div
-            className=" col-span-2"
+            className="col-span-2"
             variants={FADE_DOWN_ANIMATION_VARIANTS}
           >
             <Card title="My streams">
@@ -93,13 +96,13 @@ export default function Dashboard() {
                         cy="50"
                         r="45"
                         fill="transparent"
-                        stroke="#22C55E"
+                        stroke="#1D9BF0"
                       />
                     </motion.svg>
                     <CountingNumbers
                       value={v}
                       duration={2500}
-                      className="absolute inset-0 mx-auto flex items-center justify-center font-display text-xl text-green-500"
+                      className="absolute inset-0 mx-auto flex items-center justify-center font-display text-xl text-[#1D9BF0]"
                     />
                   </div>
                   <div className="ml-6 text-left">
@@ -146,6 +149,56 @@ export default function Dashboard() {
                   <div>Flow, $USDC</div>
                   <div>100 $USDC</div>
                 </div>
+              </div>
+            </Card>
+          </motion.div>
+          <motion.div
+            className="col-span-3"
+            variants={FADE_DOWN_ANIMATION_VARIANTS}
+          >
+            <Card title="Analytics">
+              <div className="relative">
+                <div className="absolute left-0 top-0 h-full w-full rounded-md bg-gray-100 bg-opacity-10 backdrop-blur">
+                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black px-5 py-2 text-white">
+                    Coming soon
+                  </div>
+                </div>
+                <svg
+                  className="mt-4 h-full w-full p-4"
+                  width="800"
+                  height="226"
+                  viewBox="0 0 800 226"
+                >
+                  <title></title>
+                  <desc></desc>
+                  <defs>
+                    <clipPath id="recharts264-clip">
+                      <rect x="0" y="5" height="216" width="800"></rect>
+                    </clipPath>
+                  </defs>
+                  <g className="recharts-layer recharts-area">
+                    <g className="recharts-layer">
+                      <path
+                        fill="#77b5ef"
+                        fill-opacity="0.6"
+                        width="800"
+                        height="216"
+                        stroke="none"
+                        className="recharts-curve recharts-area-area"
+                        d="M0,5C44.444,23,88.889,41,133.333,59C177.778,77,222.222,113,266.667,113C311.111,113,355.556,70.88,400,70.88C444.444,70.88,488.889,118.94,533.333,118.94C577.778,118.94,622.222,106.34,666.667,91.94C711.111,77.54,755.556,55.04,800,32.54L800,221C755.556,221,711.111,221,666.667,221C622.222,221,577.778,221,533.333,221C488.889,221,444.444,221,400,221C355.556,221,311.111,221,266.667,221C222.222,221,177.778,221,133.333,221C88.889,221,44.444,221,0,221Z"
+                      ></path>
+                      <path
+                        stroke="#77b5ef"
+                        fill="none"
+                        fill-opacity="0.6"
+                        width="800"
+                        height="216"
+                        className="recharts-curve recharts-area-curve"
+                        d="M0,5C44.444,23,88.889,41,133.333,59C177.778,77,222.222,113,266.667,113C311.111,113,355.556,70.88,400,70.88C444.444,70.88,488.889,118.94,533.333,118.94C577.778,118.94,622.222,106.34,666.667,91.94C711.111,77.54,755.556,55.04,800,32.54"
+                      ></path>
+                    </g>
+                  </g>
+                </svg>
               </div>
             </Card>
           </motion.div>

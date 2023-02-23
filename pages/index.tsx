@@ -50,9 +50,9 @@ export default function Home() {
           variants={FADE_DOWN_ANIMATION_VARIANTS}
         >
           <Balancer>
-            Lumi has re-invented pay-roll by allowing tokens to be streamed to
-            users’ wallets instantly with just one click. No more individual
-            transactions, just click and stream
+            Lumi allowing tokens to be streamed to users’ wallets instantly with
+            just one click. No more individual transactions, just click and
+            stream
           </Balancer>
         </motion.p>
         <motion.div
@@ -85,20 +85,31 @@ export default function Home() {
           variants={FADE_DOWN_ANIMATION_VARIANTS}
         >
           <Card title="Payroll">
-            <div></div>
+            <div className="mt-2 text-left text-gray-600">
+              Withdrawal of payroll at any time
+            </div>
           </Card>
-          <Card title="Streaming of grant">
-            <div></div>
+          <Card title="Grants streaming">
+            <div className="mt-2 text-left text-gray-600">
+              Issue grants without step-by-step payouts
+            </div>
           </Card>
           <Card title="Token vesting">
-            <div></div>
+            <div className="mt-2 text-left text-gray-600">
+              Transparency token vesting
+            </div>
           </Card>
           <Card title="Subscription widget">
-            <div></div>
+            <div className="mt-2 text-left text-gray-600">
+              Grant payers extended access (coming soon)
+            </div>
           </Card>
           <div className="col-span-2">
             <Card title="Its all about DAO's">
-              <div></div>
+              <div className="mt-2 text-left text-gray-600">
+                A reliable token streaming tool that is great for investments,
+                grants, airdrops or salaries
+              </div>
             </Card>
           </div>
         </motion.div>
@@ -113,13 +124,22 @@ export default function Home() {
           variants={FADE_DOWN_ANIMATION_VARIANTS}
         >
           <Card title="Smart money">
-            <div></div>
+            <div className="mt-2 text-left text-gray-600">
+              Make the money work while it streams in Lumi thanks to integration
+              with IncrementFi
+            </div>
           </Card>
           <Card title="Enhance token utility">
-            <div></div>
+            <div className="mt-2 text-left text-gray-600">
+              Send tokens to the NFT holder and add the extra utility (coming
+              soon)
+            </div>
           </Card>
           <Card title="Analytics">
-            <div></div>
+            <div className="mt-2 text-left text-gray-600">
+              Easy access to viewing and tracking transactions for your
+              company’s reports (coming soon)
+            </div>
           </Card>
         </motion.div>
       </motion.div>

@@ -7,4 +7,5 @@ config({
   "0xProfile": "0xba1132bc08f82fe2",
   "0xTestToken": "0xf817fd9a8593bf0a",
   "0xLumi": "0xf817fd9a8593bf0a",
+  "0xFungibleToken": "0xf817fd9a8593bf0a",
 });
