@@ -221,10 +221,6 @@ const CreateModal = ({
                   {selectedToken}
                 </p>
               </div>
-              <div className="flex items-center justify-between  text-left text-sm text-gray-500">
-                <p>Fee</p>
-                <p>0</p>
-              </div>
             </div>
             <button className="flex items-center space-x-2">
               {creatingStream && <Loader className="animate-spin" />}

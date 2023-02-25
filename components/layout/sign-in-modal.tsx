@@ -30,9 +30,9 @@ const SignInModal = ({
             <Image
               src="/logo-lum.png"
               alt="Logo"
-              className="h-10 w-10 rounded-full"
-              width={20}
-              height={20}
+              className="h-14 w-[120px] rounded-xl"
+              width={200}
+              height={60}
             />
           </a>
           <h3 className="font-display text-2xl font-bold">Sign In</h3>
