@@ -15,6 +15,8 @@ import Datepicker from "react-tailwindcss-datepicker";
 import { Select } from "./select";
 import { SUPPORTED_TOKENS } from "@/lib/constants";
 import { useForm } from "react-hook-form";
+import { createStreamFlow } from "flow/lumi";
+import { Loader } from "lucide-react";
 
 const CreateModal = ({
   showCreateModal,
@@ -49,12 +51,14 @@ const CreateModal = ({
 
   const [selectedToken, setSelectedToken] = useState(SUPPORTED_TOKENS[0].title);
 
-  const onSubmit = (data: any) => {
+  const [creatingStream, setCreatingStream] = useState(false);
+
+  const onSubmit = async (data: any) => {
     if (!streamStartDate.startDate || !streamEndDate.startDate) {
       return;
     }
-    const startDate = Date.parse(streamStartDate.startDate);
-    const endDate = Date.parse(streamEndDate.startDate);
+    const startDate = Date.parse(streamStartDate.startDate) / 1000;
+    const endDate = Date.parse(streamEndDate.startDate) / 1000;
     const resultData = {
       ...data,
       token: selectedToken,
@@ -63,6 +67,20 @@ const CreateModal = ({
       enabledLending,
     };
     console.log({ resultData });
+
+    try {
+      setCreatingStream(true);
+      await createStreamFlow(
+        resultData.receiver,
+        Number(resultData.amount).toFixed(8),
+        resultData.startDate.toFixed(8),
+        resultData.endDate.toFixed(8),
+      );
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setCreatingStream(false);
+    }
   };
 
   return (
@@ -208,13 +226,10 @@ const CreateModal = ({
                 <p>0</p>
               </div>
             </div>
-            <button type="button" onClick={() => mintTestTokens()}>
-              Mint test tokens
+            <button className="flex items-center space-x-2">
+              {creatingStream && <Loader className="animate-spin" />}
+              <span>Create</span>
             </button>
-            <button type="button" onClick={() => queryTokens(user?.addr)}>
-              Query test
-            </button>
-            <button>Create</button>
           </div>
         </form>
       </div>

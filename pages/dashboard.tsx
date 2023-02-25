@@ -3,11 +3,16 @@ import ComponentGrid from "@/components/home/component-grid";
 import Layout from "@/components/layout";
 import CountingNumbers from "@/components/shared/counting-numbers";
 import { useCreateModal } from "@/components/shared/create-modal";
+import Timer from "@/components/shared/timer";
 import { FADE_DOWN_ANIMATION_VARIANTS } from "@/lib/constants";
 import useScroll from "@/lib/hooks/use-scroll";
+import { IStream } from "@/lib/types";
 import classNames from "classnames";
+import { useFlowLogin } from "flow/hooks/useFlowLogin";
+import { getLastStreamInfoIn, getLastStreamInfoOut } from "flow/lumi";
 import { motion } from "framer-motion";
 import {
+  Binary,
   Coins,
   ExternalLink,
   Home,
@@ -16,12 +21,96 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import CountUp from "react-countup";
 
 export default function Dashboard() {
-  const scrolled = useScroll(50);
-
   const { pathname } = useRouter();
   const { setShowCreateModal, CreateModal } = useCreateModal();
+
+  const { user } = useFlowLogin();
+
+  const [streamsList, setStreamsList] = useState<IStream[]>([]);
+
+  const [sendingSum, setSendingSum] = useState({
+    flow: 0,
+    usdc: 0,
+  });
+  const [receivingSum, setReceivingSum] = useState({
+    flow: 0,
+    usdc: 0,
+  });
+
+  useEffect(() => {
+    const getStreamsList = async () => {
+      if (!user.addr) {
+        return;
+      }
+
+      const streamsIn = await getLastStreamInfoIn(user.addr);
+      const streamsOut = await getLastStreamInfoOut(user.addr);
+
+      const streamsInFormatted = streamsIn.map((v: any) => ({
+        claimed: Number(v.claimed),
+        endTime: Number(v.endTime),
+        startTime: Number(v.startTime),
+        total: Number(v.total),
+        receiver: "0xReceiver",
+        token: "FLOW",
+        velocity: Number(v.total) / (Number(v.endTime) - Number(v.startTime)),
+        out: false,
+      }));
+      const receivingSumFlow = streamsInFormatted.reduce(
+        (acc: any, cur: any) => {
+          if (cur.token === "FLOW") {
+            return acc + cur.velocity;
+          } else {
+            return acc;
+          }
+        },
+        0,
+      );
+
+      const streamsOutFormatted = streamsOut.map((v: any) => ({
+        claimed: Number(v.claimed),
+        endTime: Number(v.endTime),
+        startTime: Number(v.startTime),
+        total: Number(v.total),
+        receiver: "0xReceiver",
+        token: "FLOW",
+        velocity: Number(v.total) / (Number(v.endTime) - Number(v.startTime)),
+        out: true,
+      }));
+
+      const sendingSumFlow = streamsOutFormatted.reduce(
+        (acc: any, cur: any) => {
+          if (cur.token === "FLOW") {
+            return acc + cur.velocity;
+          } else {
+            return acc;
+          }
+        },
+        0,
+      );
+
+      const streams: IStream[] = [
+        ...streamsInFormatted,
+        ...streamsOutFormatted,
+      ];
+      console.log({ streams });
+      setStreamsList(streams);
+      setSendingSum({
+        usdc: 0,
+        flow: sendingSumFlow,
+      });
+      setReceivingSum({
+        usdc: 0,
+        flow: receivingSumFlow,
+      });
+    };
+
+    getStreamsList();
+  }, [user]);
 
   return (
     <Layout>
@@ -41,7 +130,10 @@ export default function Dashboard() {
           },
         }}
       >
-        <motion.div className="flex items-center justify-center space-x-8 px-5 pb-8">
+        <motion.div
+          className="flex items-center justify-center space-x-8 px-5 pb-8"
+          variants={FADE_DOWN_ANIMATION_VARIANTS}
+        >
           <Link
             className={classNames(
               "z-[5] flex items-center space-x-2 transition-colors hover:text-gray-900",
@@ -66,88 +158,138 @@ export default function Dashboard() {
             variants={FADE_DOWN_ANIMATION_VARIANTS}
           >
             <Card title="My streams">
-              {[50, 20, 90].map((v) => (
-                <div
-                  key={v}
-                  className="mt-4 flex items-center rounded-xl border border-gray-300 p-4"
-                >
-                  <div className="relative h-16 w-16">
-                    <motion.svg
-                      className="absolute inset-0 m-auto"
-                      viewBox="0 0 100 100"
-                      width={64}
-                      height={64}
+              {streamsList.length ? (
+                streamsList.map((v) => {
+                  const percentStreamed =
+                    (v.velocity * (Date.now() / 1000 - v.startTime)) / 100;
+                  const tokensStreamed = percentStreamed * v.total;
+                  const velocityPerMinute = v.velocity * 60;
+                  const token = v.token || "Flow";
+
+                  console.log({ percentStreamed });
+
+                  return (
+                    <div
+                      key={v.startTime + v.endTime + v.total + v.receiver}
+                      className="mt-4 flex items-center rounded-xl border border-gray-300 p-4"
                     >
-                      <motion.circle
-                        initial={{ pathLength: 0 }}
-                        animate={{ pathLength: v / 100 }}
-                        whileInView={{ pathLength: 1 }}
-                        viewport={{ once: true }}
-                        transition={{
-                          delay: 0.5,
-                          duration: 2,
-                          ease: "easeOut",
-                        }}
-                        strokeWidth={7}
-                        strokeDasharray="0 1"
-                        strokeLinecap="round"
-                        transform="rotate(180 50 50)"
-                        cx="50"
-                        cy="50"
-                        r="45"
-                        fill="transparent"
-                        stroke="#1D9BF0"
-                      />
-                    </motion.svg>
-                    <CountingNumbers
-                      value={v}
-                      duration={2500}
-                      className="absolute inset-0 mx-auto flex items-center justify-center font-display text-xl text-[#1D9BF0]"
-                    />
-                  </div>
-                  <div className="ml-6 text-left">
-                    <div className="flex items-center space-x-2">
-                      <div className="text-xl">750 of 1500 $USDC</div>
-                      <div className="text-sm">1 USDC/minute</div>
+                      <div className="relative h-16 w-16">
+                        <motion.svg
+                          className="absolute inset-0 m-auto"
+                          viewBox="0 0 100 100"
+                          width={64}
+                          height={64}
+                        >
+                          <motion.circle
+                            initial={{ pathLength: 0 }}
+                            animate={{ pathLength: percentStreamed }}
+                            whileInView={{ pathLength: 1 }}
+                            viewport={{ once: true }}
+                            transition={{
+                              delay: 0.5,
+                              duration: 2,
+                              ease: "easeOut",
+                            }}
+                            strokeWidth={7}
+                            strokeDasharray="0 1"
+                            strokeLinecap="round"
+                            transform="rotate(180 50 50)"
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            fill="transparent"
+                            stroke="#1D9BF0"
+                          />
+                        </motion.svg>
+                        <CountingNumbers
+                          value={Math.ceil(percentStreamed * 100)}
+                          duration={2500}
+                          className="absolute inset-0 mx-auto flex items-center justify-center font-display text-xl text-[#1D9BF0]"
+                        />
+                      </div>
+                      <div className="ml-6 text-left">
+                        <div className="flex items-center space-x-2">
+                          <div className="flex items-center text-xl">
+                            <CountUp
+                              start={0}
+                              end={v.total}
+                              duration={v.endTime - v.startTime}
+                              separator=" "
+                              decimals={4}
+                              enableScrollSpy={false}
+                              formattingFn={(number) =>
+                                String(
+                                  (
+                                    number + Number(tokensStreamed.toFixed(4))
+                                  ).toFixed(4),
+                                )
+                              }
+                            >
+                              {({ countUpRef }) => (
+                                <div className="w-[80px] truncate">
+                                  <span ref={countUpRef} />
+                                </div>
+                              )}
+                            </CountUp>
+                            <span>
+                              of {v.total} {token}
+                            </span>
+                          </div>
+                          <div className="text-sm">
+                            {velocityPerMinute.toFixed(4)} {token}/minute
+                          </div>
+                        </div>
+                        <div className="mt-1 flex items-center space-x-1 text-sm">
+                          <Timer expiryTimestamp={new Date(v.endTime * 1000)} />{" "}
+                          <span>remaining</span>
+                        </div>
+                      </div>
+                      <div className="ml-8 flex flex-col text-left">
+                        <p className="font-semibold">Receiver</p>
+                        <p className="text-sm">{v.receiver}</p>
+                      </div>
+                      <div className="ml-8 flex flex-col text-left">
+                        <p className="font-semibold">Status</p>
+                        <p className="text-sm">Active</p>
+                      </div>
+                      <div className="ml-auto">
+                        <LinkIcon />
+                      </div>
                     </div>
-                    <div className="text-sm">38h 12m 44s remaining</div>
+                  );
+                })
+              ) : (
+                <div className="mt-24 flex flex-col items-center justify-center space-y-2 text-gray-600">
+                  <div>
+                    <Binary />
                   </div>
-                  <div className="ml-8 flex flex-col text-left">
-                    <p className="font-semibold">Receiver</p>
-                    <p className="text-sm">flow.find</p>
-                  </div>
-                  <div className="ml-8 flex flex-col text-left">
-                    <p className="font-semibold">Status</p>
-                    <p className="text-sm">Active</p>
-                  </div>
-                  <div className="ml-auto">
-                    <LinkIcon />
-                  </div>
+                  <div>No streams</div>
                 </div>
-              ))}
+              )}
             </Card>
           </motion.div>
           <motion.div variants={FADE_DOWN_ANIMATION_VARIANTS}>
             <Card title="Profile">
               <p className="mt-4 text-left text-lg font-semibold">Receiving</p>
-              <div className="mt-2 flex items-center rounded-xl border border-gray-300 p-4">
-                <div className="flex w-full items-center justify-between">
-                  <div>Flow, $USDC</div>
-                  <div>0.1 $USDC/sec</div>
+              <div className="mt-2 flex flex-col items-center rounded-xl border border-gray-300 p-4">
+                <div className="flex w-full items-center justify-between text-sm">
+                  <div>FLOW</div>
+                  <div>{(receivingSum.flow * 60).toFixed(4)} FLOW/min</div>
+                </div>
+                <div className="flex w-full items-center justify-between text-sm">
+                  <div>USDC</div>
+                  <div>{(receivingSum.usdc * 60).toFixed(4)} USDC/min</div>
                 </div>
               </div>
               <p className="mt-4 text-left text-lg font-semibold">Sending</p>
-              <div className="mt-2 flex items-center rounded-xl border border-gray-300 p-4">
-                <div className="flex w-full items-center justify-between">
-                  <div>Flow, $USDC</div>
-                  <div>0 $USDC/sec</div>
+              <div className="mt-2 flex flex-col items-center rounded-xl border border-gray-300 p-4">
+                <div className="flex w-full items-center justify-between text-sm">
+                  <div>FLOW</div>
+                  <div>{(sendingSum.flow * 60).toFixed(4)} FLOW/min</div>
                 </div>
-              </div>
-              <p className="mt-4 text-left text-lg font-semibold">Withdrawn</p>
-              <div className="mt-2 flex items-center rounded-xl border border-gray-300 p-4">
-                <div className="flex w-full items-center justify-between">
-                  <div>Flow, $USDC</div>
-                  <div>100 $USDC</div>
+                <div className="flex w-full items-center justify-between text-sm">
+                  <div>USDC</div>
+                  <div>{(sendingSum.usdc * 60).toFixed(4)} USDC/min</div>
                 </div>
               </div>
             </Card>
@@ -180,7 +322,7 @@ export default function Dashboard() {
                     <g className="recharts-layer">
                       <path
                         fill="#77b5ef"
-                        fill-opacity="0.6"
+                        fillOpacity="0.6"
                         width="800"
                         height="216"
                         stroke="none"
@@ -190,7 +332,7 @@ export default function Dashboard() {
                       <path
                         stroke="#77b5ef"
                         fill="none"
-                        fill-opacity="0.6"
+                        fillOpacity="0.6"
                         width="800"
                         height="216"
                         className="recharts-curve recharts-area-curve"

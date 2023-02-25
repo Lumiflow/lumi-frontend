@@ -18,7 +18,7 @@ export default function Home() {
     <Layout>
       <CreateModal />
       <motion.div
-        className="px-5 py-16 xl:px-0"
+        className="px-5 pt-16 xl:px-0"
         initial="hidden"
         whileInView="show"
         animate="show"
@@ -141,6 +141,20 @@ export default function Home() {
               company’s reports (coming soon)
             </div>
           </Card>
+        </motion.div>
+        <motion.div
+          className="mt-16 flex justify-center"
+          variants={FADE_DOWN_ANIMATION_VARIANTS}
+        >
+          <div>
+            <Link
+              href="https://github.com/Lumiflow"
+              target="_blank"
+              className=" opacity-70 transition-opacity hover:opacity-100"
+            >
+              <Github className="h-12 w-12" />
+            </Link>
+          </div>
         </motion.div>
       </motion.div>
     </Layout>
