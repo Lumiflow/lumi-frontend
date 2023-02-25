@@ -160,13 +160,13 @@ export default function Dashboard() {
             <Card title="My streams">
               {streamsList.length ? (
                 streamsList.map((v) => {
-                  const percentStreamed =
-                    (v.velocity * (Date.now() / 1000 - v.startTime)) / 100;
-                  const tokensStreamed = percentStreamed * v.total;
+                  const alreadyVested =
+                    v.velocity * (Date.now() / 1000 - v.startTime);
+                  const claimable = alreadyVested - v.claimed;
+                  const vestedPercent = alreadyVested / v.total;
+                  const tokensStreamed = vestedPercent * v.total;
                   const velocityPerMinute = v.velocity * 60;
                   const token = v.token || "Flow";
-
-                  console.log({ percentStreamed });
 
                   return (
                     <div
@@ -182,7 +182,7 @@ export default function Dashboard() {
                         >
                           <motion.circle
                             initial={{ pathLength: 0 }}
-                            animate={{ pathLength: percentStreamed }}
+                            animate={{ pathLength: vestedPercent }}
                             whileInView={{ pathLength: 1 }}
                             viewport={{ once: true }}
                             transition={{
@@ -202,7 +202,7 @@ export default function Dashboard() {
                           />
                         </motion.svg>
                         <CountingNumbers
-                          value={Math.ceil(percentStreamed * 100)}
+                          value={Math.ceil(vestedPercent * 100)}
                           duration={2500}
                           className="absolute inset-0 mx-auto flex items-center justify-center font-display text-xl text-[#1D9BF0]"
                         />
@@ -216,7 +216,6 @@ export default function Dashboard() {
                               duration={v.endTime - v.startTime}
                               separator=" "
                               decimals={4}
-                              enableScrollSpy={false}
                               formattingFn={(number) =>
                                 String(
                                   (
