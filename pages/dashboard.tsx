@@ -1,24 +1,15 @@
 import Card from "@/components/home/card";
-import ComponentGrid from "@/components/home/component-grid";
 import Layout from "@/components/layout";
 import CountingNumbers from "@/components/shared/counting-numbers";
 import { useCreateModal } from "@/components/shared/create-modal";
 import Timer from "@/components/shared/timer";
 import { FADE_DOWN_ANIMATION_VARIANTS } from "@/lib/constants";
-import useScroll from "@/lib/hooks/use-scroll";
 import { IStream } from "@/lib/types";
 import classNames from "classnames";
 import { useFlowLogin } from "flow/hooks/useFlowLogin";
 import { getLastStreamInfoIn, getLastStreamInfoOut } from "flow/lumi";
 import { motion } from "framer-motion";
-import {
-  Binary,
-  Coins,
-  ExternalLink,
-  Home,
-  LayoutDashboard,
-  Link as LinkIcon,
-} from "lucide-react";
+import { Binary, Coins, Home, Link as LinkIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -216,6 +207,7 @@ export default function Dashboard() {
                               duration={v.endTime - v.startTime}
                               separator=" "
                               decimals={4}
+                              enableScrollSpy
                               formattingFn={(number) =>
                                 String(
                                   (

@@ -2,12 +2,11 @@ import Card from "@/components/home/card";
 import Layout from "@/components/layout";
 import Balancer from "react-wrap-balancer";
 import { motion } from "framer-motion";
-import { DEPLOY_URL, FADE_DOWN_ANIMATION_VARIANTS } from "@/lib/constants";
+import { FADE_DOWN_ANIMATION_VARIANTS } from "@/lib/constants";
 import { Github } from "@/components/shared/icons";
 import WebVitals from "@/components/home/web-vitals";
-import ComponentGrid from "@/components/home/component-grid";
 import Image from "next/image";
-import { Coins, LayoutDashboard, Wind } from "lucide-react";
+import { Coins, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { useCreateModal } from "@/components/shared/create-modal";
 
