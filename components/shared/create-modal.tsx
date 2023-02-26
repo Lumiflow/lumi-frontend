@@ -10,12 +10,16 @@ import { useFlowLogin } from "flow/hooks/useFlowLogin";
 import * as Label from "@radix-ui/react-label";
 import { Switch } from "@headlessui/react";
 import Popover from "./popover";
-import { mintTestTokens, queryTokens } from "flow/helper";
 import Datepicker from "react-tailwindcss-datepicker";
 import { Select } from "./select";
 import { SUPPORTED_TOKENS } from "@/lib/constants";
 import { useForm } from "react-hook-form";
-import { createStreamFlow } from "flow/lumi";
+import {
+  createStreamFlow,
+  createStreamFlowLending,
+  createStreamUsdc,
+  wrapLending,
+} from "flow/lumi";
 import { Loader } from "lucide-react";
 
 const CreateModal = ({
@@ -35,7 +39,6 @@ const CreateModal = ({
 
   const streamAmount = watch("amount");
 
-  // const { user } = useFlowLogin();
   const [enabledLending, setEnabledLending] = useState(false);
   const [openPopover, setOpenPopover] = useState(false);
   const { user } = useFlowLogin();
@@ -57,8 +60,20 @@ const CreateModal = ({
     if (!streamStartDate.startDate || !streamEndDate.startDate) {
       return;
     }
-    const startDate = Date.parse(streamStartDate.startDate) / 1000;
+    let startDate = Date.parse(streamStartDate.startDate) / 1000;
     const endDate = Date.parse(streamEndDate.startDate) / 1000;
+
+    if (endDate <= startDate) {
+      return;
+    }
+
+    let todayMidnight = new Date();
+    todayMidnight.setHours(0, 0, 0, 0);
+
+    if (todayMidnight.getTime() / 1000 === startDate) {
+      startDate = Date.now() / 1000;
+    }
+
     const resultData = {
       ...data,
       token: selectedToken,
@@ -70,12 +85,36 @@ const CreateModal = ({
 
     try {
       setCreatingStream(true);
-      await createStreamFlow(
-        resultData.receiver,
-        Number(resultData.amount).toFixed(8),
-        resultData.startDate.toFixed(8),
-        resultData.endDate.toFixed(8),
-      );
+
+      if (resultData.enabledLending) {
+        await wrapLending(Number(resultData.amount).toFixed(8));
+      }
+
+      if (resultData.enabledLending) {
+        await createStreamFlowLending(
+          resultData.receiver,
+          Number(resultData.amount).toFixed(8),
+          resultData.startDate.toFixed(8),
+          resultData.endDate.toFixed(8),
+          "incFLOW",
+        );
+      } else if (resultData.token === "FLOW") {
+        await createStreamFlow(
+          resultData.receiver,
+          Number(resultData.amount).toFixed(8),
+          resultData.startDate.toFixed(8),
+          resultData.endDate.toFixed(8),
+          resultData.token,
+        );
+      } else {
+        await createStreamUsdc(
+          resultData.receiver,
+          Number(resultData.amount).toFixed(8),
+          resultData.startDate.toFixed(8),
+          resultData.endDate.toFixed(8),
+          resultData.token,
+        );
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -224,7 +263,11 @@ const CreateModal = ({
             </div>
             <button className="flex items-center space-x-2">
               {creatingStream && <Loader className="animate-spin" />}
-              <span>Create</span>
+              {enabledLending ? (
+                <span>Deposit to Lending & Create</span>
+              ) : (
+                <span>Create</span>
+              )}
             </button>
           </div>
         </form>

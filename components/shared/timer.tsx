@@ -8,8 +8,8 @@ const Timer = ({ expiryTimestamp }: { expiryTimestamp: Date }) => {
   });
 
   return (
-    <div>
-      <span>{days}d</span>:<span>{hours}h</span>:<span>{minutes}m</span>:
+    <div className="font-semibold">
+      <span>{days}d</span> <span>{hours}h</span> <span>{minutes}m</span>{" "}
       <span>{seconds}s</span>
     </div>
   );

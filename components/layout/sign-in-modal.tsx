@@ -26,16 +26,11 @@ const SignInModal = ({
     <Modal showModal={showSignInModal} setShowModal={setShowSignInModal}>
       <div className="w-full overflow-hidden shadow-xl md:max-w-md md:rounded-2xl md:border md:border-gray-200">
         <div className="flex flex-col items-center justify-center space-y-3 border-b border-gray-200 bg-white px-4 py-6 pt-8 text-center md:px-16">
-          <a href="https://precedent.dev">
-            <Image
-              src="/logo-lum.png"
-              alt="Logo"
-              className="h-14 w-[120px] rounded-xl"
-              width={200}
-              height={60}
-            />
-          </a>
-          <h3 className="font-display text-2xl font-bold">Sign In</h3>
+          <div className="flex items-center space-x-2 text-2xl font-semibold">
+            <span>Sign in</span>
+            <div className="h-6 w-6 rounded-full bg-black"></div>
+            <span className="">Lumi</span>
+          </div>
           <p className="text-sm text-gray-500">
             Only Flow testnet for demo purposes
           </p>

@@ -6,7 +6,9 @@ config({
   "discovery.wallet": "https://fcl-discovery.onflow.org/testnet/authn", // Mainnet: "https://fcl-discovery.onflow.org/authn"
   "0xProfile": "0xba1132bc08f82fe2",
   "0xTestToken": "0x90ca26a9bb9bda76",
-  "0xLumi": "0x324e07d88ffb487e",
+  "0xLumi": "0x70e17dcffe4862f6",
   "0xFungibleToken": "0x9a0766d93b6608b7",
   "0xFlowToken": "0x7e60df042a9c0868",
+  "0xUsdcToken": "0xa983fecbed621163",
+  "0xPoolWrapper": "0x5b377a52afaab876",
 });

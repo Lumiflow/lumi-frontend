@@ -7,7 +7,7 @@ import { FADE_DOWN_ANIMATION_VARIANTS } from "@/lib/constants";
 import { IStream } from "@/lib/types";
 import classNames from "classnames";
 import { useFlowLogin } from "flow/hooks/useFlowLogin";
-import { getLastStreamInfoIn, getLastStreamInfoOut } from "flow/lumi";
+import { getIncomingStreams, getOutcomingStreams } from "flow/lumi";
 import { motion } from "framer-motion";
 import { Binary, Coins, Home, Link as LinkIcon } from "lucide-react";
 import Link from "next/link";
@@ -21,7 +21,8 @@ export default function Dashboard() {
 
   const { user } = useFlowLogin();
 
-  const [streamsList, setStreamsList] = useState<IStream[]>([]);
+  const [incomingStreams, setIncomingStreams] = useState<IStream[]>([]);
+  const [outcomingStreams, setOutcomingStreams] = useState<IStream[]>([]);
 
   const [sendingSum, setSendingSum] = useState({
     flow: 0,
@@ -38,16 +39,17 @@ export default function Dashboard() {
         return;
       }
 
-      const streamsIn = await getLastStreamInfoIn(user.addr);
-      const streamsOut = await getLastStreamInfoOut(user.addr);
+      const streamsIn = await getIncomingStreams(user.addr);
+      const streamsOut = await getOutcomingStreams(user.addr);
+      console.log({ streamsIn, streamsOut });
 
       const streamsInFormatted = streamsIn.map((v: any) => ({
         claimed: Number(v.claimed),
         endTime: Number(v.endTime),
         startTime: Number(v.startTime),
         total: Number(v.total),
-        receiver: "0xReceiver",
-        token: "FLOW",
+        receiver: v.to,
+        token: v.tag,
         velocity: Number(v.total) / (Number(v.endTime) - Number(v.startTime)),
         out: false,
       }));
@@ -67,8 +69,8 @@ export default function Dashboard() {
         endTime: Number(v.endTime),
         startTime: Number(v.startTime),
         total: Number(v.total),
-        receiver: "0xReceiver",
-        token: "FLOW",
+        receiver: v.to,
+        token: v.tag,
         velocity: Number(v.total) / (Number(v.endTime) - Number(v.startTime)),
         out: true,
       }));
@@ -84,12 +86,8 @@ export default function Dashboard() {
         0,
       );
 
-      const streams: IStream[] = [
-        ...streamsInFormatted,
-        ...streamsOutFormatted,
-      ];
-      console.log({ streams });
-      setStreamsList(streams);
+      setIncomingStreams(streamsInFormatted);
+      setOutcomingStreams(streamsOutFormatted);
       setSendingSum({
         usdc: 0,
         flow: sendingSumFlow,
@@ -148,9 +146,10 @@ export default function Dashboard() {
             className="col-span-2"
             variants={FADE_DOWN_ANIMATION_VARIANTS}
           >
-            <Card title="My streams">
-              {streamsList.length ? (
-                streamsList.map((v) => {
+            <Card title="Incoming streams">
+              {/* INCOMING */}
+              {incomingStreams.length ? (
+                incomingStreams.map((v) => {
                   const alreadyVested =
                     v.velocity * (Date.now() / 1000 - v.startTime);
                   const claimable = alreadyVested - v.claimed;
@@ -250,7 +249,119 @@ export default function Dashboard() {
                   );
                 })
               ) : (
-                <div className="mt-24 flex flex-col items-center justify-center space-y-2 text-gray-600">
+                <div className="mt-12 flex flex-col items-center justify-center space-y-2 text-gray-600">
+                  <div>
+                    <Binary />
+                  </div>
+                  <div>No streams</div>
+                </div>
+              )}
+              <h2 className="mt-4 bg-gradient-to-br from-black to-stone-500 bg-clip-text text-left font-display text-xl font-bold text-transparent md:text-3xl md:font-normal">
+                Outcoming streams
+              </h2>
+              {/* OUTCOMING */}
+              {outcomingStreams.length ? (
+                outcomingStreams.map((v) => {
+                  const alreadyVested =
+                    v.velocity * (Date.now() / 1000 - v.startTime);
+                  const claimable = alreadyVested - v.claimed;
+                  const vestedPercent = alreadyVested / v.total;
+                  const tokensStreamed = vestedPercent * v.total;
+                  const velocityPerMinute = v.velocity * 60;
+                  const token = v.token || "Flow";
+
+                  return (
+                    <div
+                      key={v.startTime + v.endTime + v.total + v.receiver}
+                      className="mt-4 flex items-center rounded-xl border border-gray-300 p-4"
+                    >
+                      <div className="relative h-16 w-16">
+                        <motion.svg
+                          className="absolute inset-0 m-auto"
+                          viewBox="0 0 100 100"
+                          width={64}
+                          height={64}
+                        >
+                          <motion.circle
+                            initial={{ pathLength: 0 }}
+                            animate={{ pathLength: vestedPercent }}
+                            whileInView={{ pathLength: 1 }}
+                            viewport={{ once: true }}
+                            transition={{
+                              delay: 0.5,
+                              duration: 2,
+                              ease: "easeOut",
+                            }}
+                            strokeWidth={7}
+                            strokeDasharray="0 1"
+                            strokeLinecap="round"
+                            transform="rotate(180 50 50)"
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            fill="transparent"
+                            stroke="#1D9BF0"
+                          />
+                        </motion.svg>
+                        <CountingNumbers
+                          value={Math.ceil(vestedPercent * 100)}
+                          duration={2500}
+                          className="absolute inset-0 mx-auto flex items-center justify-center font-display text-xl text-[#1D9BF0]"
+                        />
+                      </div>
+                      <div className="ml-6 text-left">
+                        <div className="flex items-center space-x-2">
+                          <div className="flex items-center text-xl">
+                            <CountUp
+                              start={0}
+                              end={v.total}
+                              duration={v.endTime - v.startTime}
+                              separator=" "
+                              decimals={4}
+                              enableScrollSpy
+                              formattingFn={(number) =>
+                                String(
+                                  (
+                                    number + Number(tokensStreamed.toFixed(4))
+                                  ).toFixed(4),
+                                )
+                              }
+                            >
+                              {({ countUpRef }) => (
+                                <div className="w-[80px] truncate">
+                                  <span ref={countUpRef} />
+                                </div>
+                              )}
+                            </CountUp>
+                            <span>
+                              of {v.total} {token}
+                            </span>
+                          </div>
+                          <div className="text-sm">
+                            {velocityPerMinute.toFixed(4)} {token}/minute
+                          </div>
+                        </div>
+                        <div className="mt-1 flex items-center space-x-1 text-sm">
+                          <Timer expiryTimestamp={new Date(v.endTime * 1000)} />{" "}
+                          <span>remaining</span>
+                        </div>
+                      </div>
+                      <div className="ml-8 flex flex-col text-left">
+                        <p className="font-semibold">Receiver</p>
+                        <p className="text-sm">{v.receiver}</p>
+                      </div>
+                      <div className="ml-8 flex flex-col text-left">
+                        <p className="font-semibold">Status</p>
+                        <p className="text-sm">Active</p>
+                      </div>
+                      <div className="ml-auto">
+                        <LinkIcon />
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="mt-12 flex flex-col items-center justify-center space-y-2 text-gray-600">
                   <div>
                     <Binary />
                   </div>

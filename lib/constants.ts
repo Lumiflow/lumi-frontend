@@ -17,14 +17,10 @@ export const FADE_UP_ANIMATION_VARIANTS = {
 export const SUPPORTED_TOKENS = [
   {
     icon: "/flow-flow-logo.svg",
-    title: "Flow",
+    title: "FLOW",
   },
   {
     icon: "/usd-coin-usdc-logo.svg",
     title: "USDC",
-  },
-  {
-    icon: "",
-    title: "TestToken",
   },
 ];
