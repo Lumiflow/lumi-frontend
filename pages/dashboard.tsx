@@ -3,21 +3,39 @@ import Layout from "@/components/layout";
 import CountingNumbers from "@/components/shared/counting-numbers";
 import { useCreateModal } from "@/components/shared/create-modal";
 import Timer from "@/components/shared/timer";
-import { FADE_DOWN_ANIMATION_VARIANTS } from "@/lib/constants";
+import {
+  FADE_DOWN_ANIMATION_VARIANTS,
+  SUPPORTED_TOKENS,
+  SUPPORTED_TOKENS_MAP,
+} from "@/lib/constants";
 import { IStream } from "@/lib/types";
 import classNames from "classnames";
 import { useFlowLogin } from "flow/hooks/useFlowLogin";
-import { getIncomingStreams, getOutcomingStreams } from "flow/lumi";
+import {
+  claimAvailable,
+  getIncomingStreams,
+  getOutcomingStreams,
+} from "flow/lumi";
 import { motion } from "framer-motion";
-import { Binary, Coins, Home, Link as LinkIcon } from "lucide-react";
+import { Binary, Coins, Home, Link as LinkIcon, Loader } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import CountUp from "react-countup";
+import Image from "next/image";
 
 export default function Dashboard() {
   const { pathname } = useRouter();
-  const { setShowCreateModal, CreateModal } = useCreateModal();
+  const [update, setUpdate] = useState(0);
+
+  const refresh = () => {
+    const up = update + 1;
+    setUpdate(up);
+  };
+
+  const { setShowCreateModal, CreateModal } = useCreateModal({
+    callback: refresh,
+  });
 
   const { user } = useFlowLogin();
 
@@ -35,6 +53,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const getStreamsList = async () => {
+      setShowCreateModal(false);
       if (!user.addr) {
         return;
       }
@@ -49,13 +68,25 @@ export default function Dashboard() {
         startTime: Number(v.startTime),
         total: Number(v.total),
         receiver: v.to,
+        sender: v.from,
         token: v.tag,
         velocity: Number(v.total) / (Number(v.endTime) - Number(v.startTime)),
         out: false,
+        uuid: v.uuid,
       }));
       const receivingSumFlow = streamsInFormatted.reduce(
         (acc: any, cur: any) => {
           if (cur.token === "FLOW") {
+            return acc + cur.velocity;
+          } else {
+            return acc;
+          }
+        },
+        0,
+      );
+      const receivingSumUsdc = streamsInFormatted.reduce(
+        (acc: any, cur: any) => {
+          if (cur.token === "USDC") {
             return acc + cur.velocity;
           } else {
             return acc;
@@ -70,9 +101,11 @@ export default function Dashboard() {
         startTime: Number(v.startTime),
         total: Number(v.total),
         receiver: v.to,
+        sender: v.from,
         token: v.tag,
         velocity: Number(v.total) / (Number(v.endTime) - Number(v.startTime)),
         out: true,
+        uuid: v.uuid,
       }));
 
       const sendingSumFlow = streamsOutFormatted.reduce(
@@ -85,21 +118,49 @@ export default function Dashboard() {
         },
         0,
       );
+      const sendingSumUsdc = streamsOutFormatted.reduce(
+        (acc: any, cur: any) => {
+          if (cur.token === "USDC") {
+            return acc + cur.velocity;
+          } else {
+            return acc;
+          }
+        },
+        0,
+      );
 
       setIncomingStreams(streamsInFormatted);
       setOutcomingStreams(streamsOutFormatted);
       setSendingSum({
-        usdc: 0,
+        usdc: sendingSumUsdc,
         flow: sendingSumFlow,
       });
       setReceivingSum({
-        usdc: 0,
+        usdc: receivingSumUsdc,
         flow: receivingSumFlow,
       });
     };
 
     getStreamsList();
-  }, [user]);
+  }, [user, update]);
+
+  const [withdrawing, setWithdrawing] = useState<any>({});
+
+  const withdraw = async (uuid: string) => {
+    setWithdrawing({
+      [uuid]: true,
+    });
+    try {
+      console.log({ uuid });
+      await claimAvailable(uuid);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setWithdrawing({
+        [uuid]: false,
+      });
+    }
+  };
 
   return (
     <Layout>
@@ -153,7 +214,8 @@ export default function Dashboard() {
                   const alreadyVested =
                     v.velocity * (Date.now() / 1000 - v.startTime);
                   const claimable = alreadyVested - v.claimed;
-                  const vestedPercent = alreadyVested / v.total;
+                  const vestedPercent =
+                    alreadyVested / v.total >= 1 ? 1 : alreadyVested / v.total;
                   const tokensStreamed = vestedPercent * v.total;
                   const velocityPerMinute = v.velocity * 60;
                   const token = v.token || "Flow";
@@ -198,35 +260,52 @@ export default function Dashboard() {
                         />
                       </div>
                       <div className="ml-6 text-left">
-                        <div className="flex items-center space-x-2">
+                        <div className="flex flex-col items-start">
                           <div className="flex items-center text-xl">
+                            <Link href={`/stream/${v.uuid}`}>
+                              Total {v.total} {token}
+                            </Link>
+                            <div className="ml-2 flex items-center text-xs">
+                              {velocityPerMinute.toFixed(4)}{" "}
+                              <Image
+                                // @ts-expect-error: kek
+                                src={SUPPORTED_TOKENS_MAP[token].icon}
+                                alt=""
+                                width={16}
+                                height={16}
+                                className="mx-1"
+                              />{" "}
+                              {token}/min
+                            </div>
+                          </div>
+                          <div className="flex items-center">
+                            <span className="mr-1">Available now:</span>
                             <CountUp
                               start={0}
                               end={v.total}
-                              duration={v.endTime - v.startTime}
+                              duration={
+                                Date.now() / 1000 > v.endTime
+                                  ? 0
+                                  : v.endTime - v.startTime
+                              }
                               separator=" "
                               decimals={4}
                               enableScrollSpy
                               formattingFn={(number) =>
                                 String(
-                                  (
-                                    number + Number(tokensStreamed.toFixed(4))
+                                  (Date.now() / 1000 > v.endTime
+                                    ? number
+                                    : number + Number(tokensStreamed.toFixed(4))
                                   ).toFixed(4),
                                 )
                               }
                             >
                               {({ countUpRef }) => (
-                                <div className="w-[80px] truncate">
+                                <div className="truncate">
                                   <span ref={countUpRef} />
                                 </div>
                               )}
                             </CountUp>
-                            <span>
-                              of {v.total} {token}
-                            </span>
-                          </div>
-                          <div className="text-sm">
-                            {velocityPerMinute.toFixed(4)} {token}/minute
                           </div>
                         </div>
                         <div className="mt-1 flex items-center space-x-1 text-sm">
@@ -234,16 +313,20 @@ export default function Dashboard() {
                           <span>remaining</span>
                         </div>
                       </div>
-                      <div className="ml-8 flex flex-col text-left">
-                        <p className="font-semibold">Receiver</p>
-                        <p className="text-sm">{v.receiver}</p>
-                      </div>
-                      <div className="ml-8 flex flex-col text-left">
-                        <p className="font-semibold">Status</p>
-                        <p className="text-sm">Active</p>
-                      </div>
-                      <div className="ml-auto">
-                        <LinkIcon />
+                      <div className="ml-auto flex items-center space-x-8">
+                        <div className="flex flex-col text-left">
+                          <p className="font-semibold">Sender</p>
+                          <p className="text-sm">{v.sender}</p>
+                        </div>
+                        <button
+                          onClick={() => withdraw(v.uuid)}
+                          className="ml-auto flex items-center space-x-2"
+                        >
+                          {withdrawing[v.uuid] && (
+                            <Loader className="animate-spin" />
+                          )}
+                          <span>Withdraw</span>
+                        </button>
                       </div>
                     </div>
                   );
@@ -265,7 +348,8 @@ export default function Dashboard() {
                   const alreadyVested =
                     v.velocity * (Date.now() / 1000 - v.startTime);
                   const claimable = alreadyVested - v.claimed;
-                  const vestedPercent = alreadyVested / v.total;
+                  const vestedPercent =
+                    alreadyVested / v.total >= 1 ? 1 : alreadyVested / v.total;
                   const tokensStreamed = vestedPercent * v.total;
                   const velocityPerMinute = v.velocity * 60;
                   const token = v.token || "Flow";
@@ -310,35 +394,52 @@ export default function Dashboard() {
                         />
                       </div>
                       <div className="ml-6 text-left">
-                        <div className="flex items-center space-x-2">
+                        <div className="flex flex-col items-start">
                           <div className="flex items-center text-xl">
+                            <Link href={`/stream/${v.uuid}`}>
+                              Total {v.total} {token}
+                            </Link>
+                            <div className="ml-2 flex items-center text-xs">
+                              {velocityPerMinute.toFixed(4)}{" "}
+                              <Image
+                                // @ts-expect-error: kek
+                                src={SUPPORTED_TOKENS_MAP[token].icon}
+                                alt=""
+                                width={16}
+                                height={16}
+                                className="mx-1"
+                              />{" "}
+                              {token}/min
+                            </div>
+                          </div>
+                          <div className="flex items-center">
+                            <span className="mr-1">Available now:</span>
                             <CountUp
                               start={0}
                               end={v.total}
-                              duration={v.endTime - v.startTime}
+                              duration={
+                                Date.now() / 1000 > v.endTime
+                                  ? 0
+                                  : v.endTime - v.startTime
+                              }
                               separator=" "
                               decimals={4}
                               enableScrollSpy
                               formattingFn={(number) =>
                                 String(
-                                  (
-                                    number + Number(tokensStreamed.toFixed(4))
+                                  (Date.now() / 1000 > v.endTime
+                                    ? number
+                                    : number + Number(tokensStreamed.toFixed(4))
                                   ).toFixed(4),
                                 )
                               }
                             >
                               {({ countUpRef }) => (
-                                <div className="w-[80px] truncate">
+                                <div className="truncate">
                                   <span ref={countUpRef} />
                                 </div>
                               )}
                             </CountUp>
-                            <span>
-                              of {v.total} {token}
-                            </span>
-                          </div>
-                          <div className="text-sm">
-                            {velocityPerMinute.toFixed(4)} {token}/minute
                           </div>
                         </div>
                         <div className="mt-1 flex items-center space-x-1 text-sm">
@@ -346,16 +447,9 @@ export default function Dashboard() {
                           <span>remaining</span>
                         </div>
                       </div>
-                      <div className="ml-8 flex flex-col text-left">
+                      <div className="ml-auto flex flex-col text-left">
                         <p className="font-semibold">Receiver</p>
                         <p className="text-sm">{v.receiver}</p>
-                      </div>
-                      <div className="ml-8 flex flex-col text-left">
-                        <p className="font-semibold">Status</p>
-                        <p className="text-sm">Active</p>
-                      </div>
-                      <div className="ml-auto">
-                        <LinkIcon />
                       </div>
                     </div>
                   );

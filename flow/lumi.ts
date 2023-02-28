@@ -18,8 +18,8 @@ export const createStreamFlowLending = async (
         prepare(acct: AuthAccount){
             var currentTimeStamp = getCurrentBlock().timestamp;
     
-            var receiverCapability = getAccount(receiver).getCapability<&FungibleToken.Vault{FungibleToken.Receiver}>(/public/MainReceiver)
-            var ownerReceiverCapability = acct.getCapability<&FungibleToken.Vault{FungibleToken.Receiver}>(/public/MainReceiver)
+            var receiverCapability = getAccount(receiver).getCapability<&FungibleToken.Vault{FungibleToken.Receiver}>(/public/flowTokenReceiver)
+            var ownerReceiverCapability = acct.getCapability<&FungibleToken.Vault{FungibleToken.Receiver}>(/public/flowTokenReceiver)
             var ownerProviderCapability = acct.borrow<&PoolWrapper.Vault>(from: /storage/poolWrapper)
                 ?? panic("Could not borrow reference to the owner's Vault!")
     
@@ -34,15 +34,15 @@ export const createStreamFlowLending = async (
                 endTime: endTime)
     
     
-            var collectionRef = acct.borrow<&Lumi.SourceCollection>(from: /storage/sourceCollectionv1)
+            var collectionRef = acct.borrow<&Lumi.SourceCollection>(from: /storage/sourceCollectionv2)
     
             if(collectionRef == nil){
                 var streamCollection <- Lumi.createEmptyCollection()
-                acct.save<@Lumi.SourceCollection>(<-streamCollection, to: /storage/sourceCollectionv1)
-                let ReceiverRef = acct.link<&Lumi.SourceCollection{Lumi.StreamInfoGetter}>(/public/mainGetter, target: /storage/sourceCollectionv1)
-                let ClaimerRef = acct.link<&Lumi.SourceCollection{Lumi.StreamClaimer}>(/public/mainClaimer, target: /storage/sourceCollectionv1)
+                acct.save<@Lumi.SourceCollection>(<-streamCollection, to: /storage/sourceCollectionv2)
+                let ReceiverRef = acct.link<&Lumi.SourceCollection{Lumi.StreamInfoGetter}>(/public/mainGetter, target: /storage/sourceCollectionv2)
+                let ClaimerRef = acct.link<&Lumi.SourceCollection{Lumi.StreamClaimer}>(/public/mainClaimer, target: /storage/sourceCollectionv2)
     
-                collectionRef = acct.borrow<&Lumi.SourceCollection>(from: /storage/sourceCollectionv1)
+                collectionRef = acct.borrow<&Lumi.SourceCollection>(from: /storage/sourceCollectionv2)
             }
     
             collectionRef!.deposit(source: <- streamResource)
@@ -77,15 +77,15 @@ export const createStreamUsdc = async (
     cadence: `
       import Lumi from 0xLumi
       import FungibleToken from 0xFungibleToken
-      import UsdcToken from 0xUsdcToken
+      import FiatToken from 0xUsdcToken
 
       transaction(receiver: Address, amount: UFix64, startTime: UFix64, endTime: UFix64, tag: String){
         prepare(acct: AuthAccount){
             var currentTimeStamp = getCurrentBlock().timestamp;
     
-            var receiverCapability = getAccount(receiver).getCapability<&FungibleToken.Vault{FungibleToken.Receiver}>(/public/MainReceiver)
-            var ownerReceiverCapability = acct.getCapability<&FungibleToken.Vault{FungibleToken.Receiver}>(/public/MainReceiver)
-            var ownerProviderCapability = acct.borrow<&UsdcToken.Vault>(from: /storage/usdcTokenVault)
+            var receiverCapability = getAccount(receiver).getCapability<&FungibleToken.Vault{FungibleToken.Receiver}>(FiatToken.VaultReceiverPubPath)
+            var ownerReceiverCapability = acct.getCapability<&FungibleToken.Vault{FungibleToken.Receiver}>(FiatToken.VaultReceiverPubPath)
+            var ownerProviderCapability = acct.borrow<&FiatToken.Vault>(from: FiatToken.VaultStoragePath)
                 ?? panic("Could not borrow reference to the owner's Vault!")
     
             var depositVault <- ownerProviderCapability.withdraw(amount: amount);
@@ -99,15 +99,15 @@ export const createStreamUsdc = async (
                 endTime: endTime)
     
     
-            var collectionRef = acct.borrow<&Lumi.SourceCollection>(from: /storage/sourceCollectionv1)
+            var collectionRef = acct.borrow<&Lumi.SourceCollection>(from: /storage/sourceCollectionv2)
     
             if(collectionRef == nil){
                 var streamCollection <- Lumi.createEmptyCollection()
-                acct.save<@Lumi.SourceCollection>(<-streamCollection, to: /storage/sourceCollectionv1)
-                let ReceiverRef = acct.link<&Lumi.SourceCollection{Lumi.StreamInfoGetter}>(/public/mainGetter, target: /storage/sourceCollectionv1)
-                let ClaimerRef = acct.link<&Lumi.SourceCollection{Lumi.StreamClaimer}>(/public/mainClaimer, target: /storage/sourceCollectionv1)
+                acct.save<@Lumi.SourceCollection>(<-streamCollection, to: /storage/sourceCollectionv2)
+                let ReceiverRef = acct.link<&Lumi.SourceCollection{Lumi.StreamInfoGetter}>(/public/mainGetter, target: /storage/sourceCollectionv2)
+                let ClaimerRef = acct.link<&Lumi.SourceCollection{Lumi.StreamClaimer}>(/public/mainClaimer, target: /storage/sourceCollectionv2)
     
-                collectionRef = acct.borrow<&Lumi.SourceCollection>(from: /storage/sourceCollectionv1)
+                collectionRef = acct.borrow<&Lumi.SourceCollection>(from: /storage/sourceCollectionv2)
             }
     
             collectionRef!.deposit(source: <- streamResource)
@@ -148,8 +148,8 @@ export const createStreamFlow = async (
         prepare(acct: AuthAccount){
             var currentTimeStamp = getCurrentBlock().timestamp;
     
-            var receiverCapability = getAccount(receiver).getCapability<&FungibleToken.Vault{FungibleToken.Receiver}>(/public/MainReceiver)
-            var ownerReceiverCapability = acct.getCapability<&FungibleToken.Vault{FungibleToken.Receiver}>(/public/MainReceiver)
+            var receiverCapability = getAccount(receiver).getCapability<&FungibleToken.Vault{FungibleToken.Receiver}>(/public/flowTokenReceiver)
+            var ownerReceiverCapability = acct.getCapability<&FungibleToken.Vault{FungibleToken.Receiver}>(/public/flowTokenReceiver)
             var ownerProviderCapability = acct.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault)
                 ?? panic("Could not borrow reference to the owner's Vault!")
     
@@ -164,15 +164,15 @@ export const createStreamFlow = async (
                 endTime: endTime)
     
     
-            var collectionRef = acct.borrow<&Lumi.SourceCollection>(from: /storage/sourceCollectionv1)
+            var collectionRef = acct.borrow<&Lumi.SourceCollection>(from: /storage/sourceCollectionv2)
     
             if(collectionRef == nil){
                 var streamCollection <- Lumi.createEmptyCollection()
-                acct.save<@Lumi.SourceCollection>(<-streamCollection, to: /storage/sourceCollectionv1)
-                let ReceiverRef = acct.link<&Lumi.SourceCollection{Lumi.StreamInfoGetter}>(/public/mainGetter, target: /storage/sourceCollectionv1)
-                let ClaimerRef = acct.link<&Lumi.SourceCollection{Lumi.StreamClaimer}>(/public/mainClaimer, target: /storage/sourceCollectionv1)
+                acct.save<@Lumi.SourceCollection>(<-streamCollection, to: /storage/sourceCollectionv2)
+                let ReceiverRef = acct.link<&Lumi.SourceCollection{Lumi.StreamInfoGetter}>(/public/mainGetter, target: /storage/sourceCollectionv2)
+                let ClaimerRef = acct.link<&Lumi.SourceCollection{Lumi.StreamClaimer}>(/public/mainClaimer, target: /storage/sourceCollectionv2)
     
-                collectionRef = acct.borrow<&Lumi.SourceCollection>(from: /storage/sourceCollectionv1)
+                collectionRef = acct.borrow<&Lumi.SourceCollection>(from: /storage/sourceCollectionv2)
             }
     
             collectionRef!.deposit(source: <- streamResource)

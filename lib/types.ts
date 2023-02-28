@@ -4,7 +4,9 @@ export interface IStream {
   startTime: number;
   total: number;
   receiver: string;
+  sender: string;
   token?: string;
   velocity: number;
   out: boolean;
+  uuid: string;
 }

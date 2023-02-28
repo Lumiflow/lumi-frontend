@@ -24,3 +24,15 @@ export const SUPPORTED_TOKENS = [
     title: "USDC",
   },
 ];
+
+export const SUPPORTED_TOKENS_MAP = {
+  FLOW: {
+    icon: "/flow-flow-logo.svg",
+  },
+  USDC: {
+    icon: "/usd-coin-usdc-logo.svg",
+  },
+  incFLOW: {
+    icon: "/increment-logo-transparent.png",
+  },
+};

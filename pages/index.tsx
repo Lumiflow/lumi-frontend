@@ -9,9 +9,16 @@ import Image from "next/image";
 import { Coins, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { useCreateModal } from "@/components/shared/create-modal";
+import { useRouter } from "next/router";
 
 export default function Home() {
-  const { setShowCreateModal, CreateModal } = useCreateModal();
+  const router = useRouter();
+  const goToDashboard = () => {
+    router.push("/dashboard");
+  };
+  const { setShowCreateModal, CreateModal } = useCreateModal({
+    callback: goToDashboard,
+  });
 
   return (
     <Layout>

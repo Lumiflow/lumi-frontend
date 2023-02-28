@@ -25,9 +25,11 @@ import { Loader } from "lucide-react";
 const CreateModal = ({
   showCreateModal,
   setShowCreateModal,
+  onStreamCreated,
 }: {
   showCreateModal: boolean;
   setShowCreateModal: Dispatch<SetStateAction<boolean>>;
+  onStreamCreated: () => void;
 }) => {
   // const [signInClicked, setSignInClicked] = useState(false);
   const {
@@ -115,6 +117,7 @@ const CreateModal = ({
           resultData.token,
         );
       }
+      onStreamCreated();
     } catch (err) {
       console.error(err);
     } finally {
@@ -212,8 +215,8 @@ const CreateModal = ({
               <Popover
                 content={
                   <div className="max-w-[200px] p-4 text-sm">
-                    If you turn on make money work, then IncrementFi will bring
-                    yield on streaming money
+                    If you turn this option on, then receiver will earn yield on
+                    streaming money with IncrementFi
                   </div>
                 }
                 align="end"
@@ -276,7 +279,7 @@ const CreateModal = ({
   );
 };
 
-export function useCreateModal() {
+export function useCreateModal({ callback }: { callback: () => void }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const CreateModalCallback = useCallback(() => {
@@ -284,9 +287,10 @@ export function useCreateModal() {
       <CreateModal
         showCreateModal={showCreateModal}
         setShowCreateModal={setShowCreateModal}
+        onStreamCreated={callback}
       />
     );
-  }, [showCreateModal, setShowCreateModal]);
+  }, [showCreateModal, setShowCreateModal, callback]);
 
   return useMemo(
     () => ({ setShowCreateModal, CreateModal: CreateModalCallback }),
