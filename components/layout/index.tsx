@@ -67,7 +67,7 @@ export default function Layout({
           <div className="flex items-center space-x-4">
             <AnimatePresence>
               <motion.a
-                href="https://twitter.com/maximal_dao/"
+                href="https://twitter.com/maxareumad/status/1630620951120429071"
                 target="_blank"
                 rel="noreferrer"
                 className="flex max-w-fit items-center justify-center space-x-2 overflow-hidden rounded-full bg-blue-100 px-7 py-2 transition-colors hover:bg-blue-200"
