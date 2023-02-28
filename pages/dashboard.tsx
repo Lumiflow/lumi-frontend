@@ -73,6 +73,12 @@ export default function Dashboard() {
         out: false,
         uuid: v.uuid,
       }));
+
+      const indexRem = streamsInFormatted.findIndex(
+        (v: any) => v.uuid === "136694191",
+      );
+      streamsInFormatted.splice(indexRem, 1);
+      streamsInFormatted.pop();
       const receivingSumFlow = streamsInFormatted.reduce(
         (acc: any, cur: any) => {
           if (cur.token === "FLOW") {
