@@ -147,7 +147,7 @@ const CreateModal = ({
                 className="h-9 rounded-md border border-gray-300 px-3 py-2 text-gray-700 placeholder-gray-400 transition-all duration-75 hover:border-gray-800 focus:border-blue-500 focus:outline-none focus:ring-blue-500/20 active:bg-gray-100"
                 type="text"
                 id="receiver"
-                placeholder="flow.find"
+                placeholder="0x2154ed23be611b9c"
                 {...register("receiver", { required: true })}
               />
             </div>
