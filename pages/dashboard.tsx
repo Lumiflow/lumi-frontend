@@ -5,7 +5,6 @@ import { useCreateModal } from "@/components/shared/create-modal";
 import Timer from "@/components/shared/timer";
 import {
   FADE_DOWN_ANIMATION_VARIANTS,
-  SUPPORTED_TOKENS,
   SUPPORTED_TOKENS_MAP,
 } from "@/lib/constants";
 import { IStream } from "@/lib/types";
